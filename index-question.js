@@ -23,7 +23,7 @@ function createPDF(data) {
     function addPage() {
       doc.addPage();
       currentPage++;
-      doc.fontSize(20).text(`Page ${currentPage}`, { align: 'center' });
+      doc.fontSize(20).fillColor('#083446').text(`Page ${currentPage}`, { align: 'center' });
       doc.moveDown();
       drawTableRow(doc, headers, columnWidths, true);
     }
@@ -48,7 +48,7 @@ function createPDF(data) {
 
     // Add detailed text from the agreement object, aligned to the left
     doc.moveDown(2);
-    doc.fontSize(12).text(data.agreement.agreement, {
+    doc.fontSize(12).fillColor('#083446').text(data.agreement.agreement, {
       align: 'left'
     });
     
@@ -71,7 +71,8 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
   });
   const rowHeight = Math.max(...cellHeights) + 10;
 
-  // Draw the entire row border for non-header rows
+  doc.strokeColor('#e5e5e5');
+
   if (!isHeader) {
     doc.rect(doc.page.margins.left, y, columnWidths.reduce((a, b) => a + b), rowHeight).stroke();
   }
@@ -80,7 +81,6 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
   row.forEach((cell, i) => {
     const columnWidth = columnWidths[i];
 
-    // Draw internal vertical lines for multi-column rows (non-header rows only)
     if (!isHeader && i > 0 && row.length > 1) {
       doc.moveTo(x, y)
          .lineTo(x, y + rowHeight)
@@ -88,14 +88,28 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
     }
 
     doc.font(isHeader ? 'Helvetica-Bold' : 'Helvetica')
-      .fontSize(12)
-      .text(cell, x + 5, y + 5, {
+      .fontSize(12);
+
+    if (i === 0 && cell.startsWith('*')) {
+      // Red asterisk
+      doc.fillColor('red').text('*', x + 5, y + 5, { continued: true });
+      // Rest of the text in #083446
+      doc.fillColor('#083446').text(cell.slice(1), { 
         width: columnWidth - 10,
         height: rowHeight - 10,
         ellipsis: true,
         align: 'left',
         lineGap: 0
       });
+    } else {
+      doc.fillColor('#083446').text(cell, x + 5, y + 5, {
+        width: columnWidth - 10,
+        height: rowHeight - 10,
+        ellipsis: true,
+        align: 'left',
+        lineGap: 0
+      });
+    }
     x += columnWidth;
   });
 
@@ -109,6 +123,9 @@ function drawCheckbox(doc, text, checked = false) {
   
   const x = doc.page.margins.left;
   const y = doc.y;
+
+  // Set the border color to #e5e5e5
+  doc.strokeColor('#e5e5e5');
 
   // Draw checkbox
   doc.rect(x, y, checkboxSize, checkboxSize).stroke();
@@ -125,6 +142,7 @@ function drawCheckbox(doc, text, checked = false) {
 
   // Draw text
   doc.fontSize(12)
+  .fillColor('#083446')  // Set the font color to #083446
     .text(text, x + checkboxSize + margin, y + (checkboxSize / 2) - 6, {
       align: 'left'
     });
