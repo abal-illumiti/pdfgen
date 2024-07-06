@@ -48,7 +48,7 @@ function createPDF(data) {
 
     // Add detailed text from the agreement object, aligned to the left
     doc.moveDown(2);
-    doc.fontSize(12).fillColor('#083446').text(data.agreement.agreement, {
+    doc.fontSize(12).text(data.agreement.agreement, {
       align: 'left'
     });
     
@@ -81,6 +81,7 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
   row.forEach((cell, i) => {
     const columnWidth = columnWidths[i];
 
+    // Draw internal vertical lines for multi-column rows (non-header rows only)
     if (!isHeader && i > 0 && row.length > 1) {
       doc.moveTo(x, y)
          .lineTo(x, y + rowHeight)
@@ -109,7 +110,7 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
         align: 'left',
         lineGap: 0
       });
-    }
+}
     x += columnWidth;
   });
 
@@ -142,7 +143,7 @@ function drawCheckbox(doc, text, checked = false) {
 
   // Draw text
   doc.fontSize(12)
-  .fillColor('#083446')  // Set the font color to #083446
+.fillColor('#083446')  // Set the font color to #083446
     .text(text, x + checkboxSize + margin, y + (checkboxSize / 2) - 6, {
       align: 'left'
     });
