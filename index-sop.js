@@ -64,6 +64,7 @@ function drawItem(doc, item, pageWidth, leftMargin) {
   let fontSize = 12;
   let fontStyle = 'Helvetica';
   let isSpecialRow = false;
+  let isBold = false;
   
   if (item.description.includes('Section')) {
     fontSize = 18;
@@ -73,6 +74,14 @@ function drawItem(doc, item, pageWidth, leftMargin) {
     fontSize = 14;
     fontStyle = 'Helvetica-Bold';
     isSpecialRow = true;
+  }
+
+  // Check if the description starts with "<b>"
+  if (item.description.startsWith('<b>')) {
+    fontStyle = 'Helvetica-Bold';
+    isBold = true;
+    // Remove the "<b>" from the beginning of the description
+    item.description = item.description.substring(3);
   }
 
   // Draw description
