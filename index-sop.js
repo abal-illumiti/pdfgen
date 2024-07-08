@@ -89,12 +89,8 @@ function drawItem(doc, item, pageWidth, leftMargin) {
   doc.font(fontStyle).fontSize(fontSize).fillColor('#083446');
   doc.text(item.description, { width: pageWidth - 2 * leftMargin, lineGap: 5 });
   
-  // Reduce space after Section and Subsection
-  if (isSpecialRow) {
-    doc.moveDown(0.2);  // Reduced space for Section and Subsection
-  } else {
-    doc.moveDown(0.5);  // Keep original space for other rows
-  }
+  // Reduce space after all rows
+  doc.moveDown(0.2);  // Reduced space for all rows
 
   // Handle different types of controls
   if (item.type) {
@@ -129,9 +125,9 @@ function drawItem(doc, item, pageWidth, leftMargin) {
 
   // Adjust final spacing based on row type
   if (isSpecialRow) {
-    doc.moveDown(0.3);  // Reduced space after Section and Subsection
+    doc.moveDown(0.3);  // Slightly more space after Section and Subsection
   } else {
-    doc.moveDown(0.8);  // Slightly increased space after other rows for better separation
+    doc.moveDown(0.1);  // Minimal space after other rows for tighter layout
   }
 }
 
