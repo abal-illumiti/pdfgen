@@ -130,7 +130,7 @@ function drawCheckbox(doc, text, checked = false) {
 
   // Draw checkbox
   doc.rect(x, y, checkboxSize, checkboxSize).stroke();
-
+  doc.strokeColor('red').lineWidth(2);
   // If checked, draw the check mark
   if (checked) {
     const checkX = x + 3;
