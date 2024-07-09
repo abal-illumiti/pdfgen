@@ -15,7 +15,7 @@ function createPDF(data) {
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const columnWidths = [250, 250];
+    const columnWidths = [400, 100];
     const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0);
     const headers = ['Audit Checkpoint', 'Farmer Notes'];
     let currentPage = 0;
@@ -23,8 +23,8 @@ function createPDF(data) {
     function addPage() {
       doc.addPage();
       currentPage++;
-      doc.fontSize(20).fillColor('#083446').text(`Page ${currentPage}`, { align: 'center' });
-      doc.moveDown();
+      doc.fontSize(20).text(`Page ${currentPage}`, { align: 'center' });
+      doc.moveDown(0.3);
       drawTableRow(doc, headers, columnWidths, true);
     }
 
@@ -41,21 +41,20 @@ function createPDF(data) {
       }
     });
 
-    // Add the checkbox and text on the last page based on the agreement object
-    if (doc.y + 30 > doc.page.height - doc.page.margins.bottom) {
-      addPage();
-    }
+    // Add checkbox before the agreement text
+    doc.moveDown(1);
+    drawCheckbox(doc, 'I agree', data.agreement.checkbox);
 
-    // Add detailed text from the agreement object, aligned to the left
-    doc.moveDown(2);
-    doc.fontSize(12).text(data.agreement.agreement, {
-      align: 'left'
-    });
-    
-    doc.moveDown(3);
-    drawCheckbox(doc, 'I agree', data.agreement.checkbox); // Use the checkbox value from JSON
-
-
+    // Add detailed text from the agreement object, aligned to the table margins
+    doc.moveDown(0.5);
+    doc.fontSize(12).text(data.agreement.agreement, 
+      doc.page.margins.left, // Set left margin to match table
+      doc.y, 
+      {
+        width: totalWidth, // Set width to match table
+        align: 'left'
+      }
+    );
 
     doc.end();
   });
@@ -69,7 +68,7 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
       lineGap: 0
     });
   });
-  const rowHeight = Math.max(...cellHeights) + 10;
+  const rowHeight = Math.max(...cellHeights) + (isHeader ? 5 : 10); // Less padding for header
 
   doc.strokeColor('#e5e5e5');
 
@@ -81,7 +80,6 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
   row.forEach((cell, i) => {
     const columnWidth = columnWidths[i];
 
-    // Draw internal vertical lines for multi-column rows (non-header rows only)
     if (!isHeader && i > 0 && row.length > 1) {
       doc.moveTo(x, y)
          .lineTo(x, y + rowHeight)
@@ -89,33 +87,19 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
     }
 
     doc.font(isHeader ? 'Helvetica-Bold' : 'Helvetica')
-      .fontSize(12);
-
-    if (i === 0 && cell.startsWith('*')) {
-      // Red asterisk
-      doc.fillColor('red').text('*', x + 5, y + 5, { continued: true });
-      // Rest of the text in #083446
-      doc.fillColor('#083446').text(cell.slice(1), { 
+      .fontSize(12)
+      .fillColor('#083446')
+      .text(cell, x + 5, y + (isHeader ? 2 : 5), { // Less top padding for header
         width: columnWidth - 10,
-        height: rowHeight - 10,
-        ellipsis: true,
+        height: rowHeight - (isHeader ? 4 : 10),
         align: 'left',
         lineGap: 0
       });
-    } else {
-      doc.fillColor('#083446').text(cell, x + 5, y + 5, {
-        width: columnWidth - 10,
-        height: rowHeight - 10,
-        ellipsis: true,
-        align: 'left',
-        lineGap: 0
-      });
-}
     x += columnWidth;
   });
 
   doc.x = doc.page.margins.left;
-  doc.y = y + rowHeight;
+  doc.y = y + rowHeight - (isHeader ? 2 : 0); // Reduce space after header
 }
 
 function drawCheckbox(doc, text, checked = false) {
@@ -130,9 +114,10 @@ function drawCheckbox(doc, text, checked = false) {
 
   // Draw checkbox
   doc.rect(x, y, checkboxSize, checkboxSize).stroke();
-  doc.strokeColor('red').lineWidth(2);
-  // If checked, draw the check mark
+
+  // If checked, draw the check mark in red
   if (checked) {
+    doc.strokeColor('red').lineWidth(2);  // Set color to red and increase line width for visibility
     const checkX = x + 3;
     const checkY = y + 3;
     doc.moveTo(checkX, checkY + 5)
@@ -141,12 +126,18 @@ function drawCheckbox(doc, text, checked = false) {
       .stroke();
   }
 
+  // Reset the line width for future drawing operations
+  doc.lineWidth(1);
+
   // Draw text
   doc.fontSize(12)
-.fillColor('#083446')  // Set the font color to #083446
+    .fillColor('#083446')  // Text color remains #083446
     .text(text, x + checkboxSize + margin, y + (checkboxSize / 2) - 6, {
       align: 'left'
     });
+
+  // Update the y position
+  doc.y = y + checkboxSize + 5;
 }
 
 app.post('/generate-pdf', async (req, res) => {
