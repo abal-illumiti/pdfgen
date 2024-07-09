@@ -23,7 +23,10 @@ function createPDF(data) {
     function addPage() {
       doc.addPage();
       currentPage++;
-      doc.fontSize(20).text(`Page ${currentPage}`, { align: 'center' });
+      doc.fontSize(20)
+         .font('Helvetica')
+        .fillColor('#083446')  // Set page number color to #083446
+        .text(`Page ${currentPage}`, { align: 'center' });
       doc.moveDown(0.3);
       drawTableRow(doc, headers, columnWidths, true);
     }
@@ -47,14 +50,16 @@ function createPDF(data) {
 
     // Add detailed text from the agreement object, aligned to the table margins
     doc.moveDown(0.5);
-    doc.fontSize(12).text(data.agreement.agreement, 
-      doc.page.margins.left, // Set left margin to match table
-      doc.y, 
-      {
-        width: totalWidth, // Set width to match table
-        align: 'left'
-      }
-    );
+    doc.fontSize(12)
+      .fillColor('#083446')  // Set text color to #083446
+      .text(data.agreement.agreement, 
+        doc.page.margins.left,
+        doc.y, 
+        {
+          width: totalWidth,
+          align: 'left'
+        }
+      );
 
     doc.end();
   });
@@ -117,7 +122,7 @@ function drawCheckbox(doc, text, checked = false) {
 
   // If checked, draw the check mark in red
   if (checked) {
-    doc.strokeColor('red').lineWidth(2);  // Set color to red and increase line width for visibility
+    doc.strokeColor('red').lineWidth(2);
     const checkX = x + 3;
     const checkY = y + 3;
     doc.moveTo(checkX, checkY + 5)
@@ -129,9 +134,9 @@ function drawCheckbox(doc, text, checked = false) {
   // Reset the line width for future drawing operations
   doc.lineWidth(1);
 
-  // Draw text
+  // Draw text with color #083446
   doc.fontSize(12)
-    .fillColor('#083446')  // Text color remains #083446
+    .fillColor('#083446')  // Set text color to #083446
     .text(text, x + checkboxSize + margin, y + (checkboxSize / 2) - 6, {
       align: 'left'
     });
