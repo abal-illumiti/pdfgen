@@ -23,6 +23,10 @@ function createPDF(data) {
     function addPage() {
       doc.addPage();
       currentPage++;
+
+      // Add logo to the top left corner
+      doc.image('./sapCompanyLogo.png', 30, 30,  { width: 25, height: 25 });
+
       doc.fontSize(20)
          .font('Helvetica')
         .fillColor('#083446')  // Set page number color to #083446

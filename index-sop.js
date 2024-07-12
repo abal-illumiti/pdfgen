@@ -22,6 +22,10 @@ function createPDF(data) {
     function addPage() {
       doc.addPage();
       currentPage++;
+
+      // Add logo to the top left corner
+      doc.image('./sapCompanyLogo.png', 30, 30,  { width: 25, height: 25 });
+
       doc.fontSize(20).text(`Page ${currentPage}`, { align: 'center' });
       doc.moveDown();
     }
@@ -70,7 +74,7 @@ function drawItem(doc, item, pageWidth, leftMargin) {
     fontSize = 18;
     fontStyle = 'Helvetica-Bold';
     isSpecialRow = true;
-  } else if (item.description.includes('Subsection')) {
+  } else if (item.description.includes('Subsection') || item.description.includes('Sous-section')) {
     fontSize = 14;
     fontStyle = 'Helvetica-Bold';
     isSpecialRow = true;
