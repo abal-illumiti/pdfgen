@@ -3,7 +3,7 @@ const PDFSOPDocument = require("pdfkit-table");
 //const PDFDocumentTable = require('pdfkit-table');  // Change this line
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
@@ -37,11 +37,21 @@ function createPDF(data) {
       if (docSOP.y > 700) {
         addPage();
       }
-      if (item["Floor Area"]) {
-        drawStockDensityTable( docSOP, item["Floor Area"]["Table"], item["Floor Area"]["Heading"], pageWidth, leftMargin );
-      } else if (item["Feeders"]) {
+      if (item["floorArea"]) {
+        drawStockDensityTable(
+          docSOP,
+          item["floorArea"],
+          pageWidth,
+          leftMargin
+        );
+      } else if (item["feeders"]) {
         docSOP.moveDown(1);
-        drawStockDensityTable( docSOP, item["Feeders"]["Table"], item["Feeders"]["Heading"], pageWidth, leftMargin );
+        drawStockDensityTable(
+          docSOP,
+          item["feeders"],
+          pageWidth,
+          leftMargin
+        );
       } else {
         drawItem(docSOP, item, pageWidth, leftMargin);
       }
@@ -240,27 +250,19 @@ function drawRadioButton(docSOP, label, isChecked, leftMargin) {
 }
 
 // Add this new function to draw the Stock Density table
-function drawStockDensityTable(
-  docSOP,
-  stockDensity,
-  heading,
-  pageWidth,
-  leftMargin
-) {
-  if (!Array.isArray(stockDensity) || stockDensity.length === 0) return;
+function drawStockDensityTable(docSOP, tableData, pageWidth, leftMargin) {
+  if (!tableData || !tableData.columnHeader || !tableData.rows) return;
 
-  const headers = Object.keys(stockDensity[0]);
-  const rows = stockDensity.map((item) => Object.values(item));
+  const headers = Object.values(tableData.columnHeader);
+  const rows = tableData.rows;
 
   const cellPadding = 2;
   const cellWidth = (pageWidth - 2 * leftMargin) / headers.length;
   const fontSize = 8;
   const headerFontSize = 9;
 
-  docSOP
-    .font("Helvetica-Bold")
-    .fontSize(14)
-    .text(heading, leftMargin, docSOP.y);
+  // Draw the table heading
+  docSOP.font("Helvetica-Bold").fontSize(14).text(tableData.Heading, leftMargin, docSOP.y);
   docSOP.moveDown(0.5);
 
   let yPosition = docSOP.y;
@@ -316,9 +318,10 @@ function drawStockDensityTable(
   drawHeaders();
 
   // Draw rows
-  rows.forEach((row, rowIndex) => {
+  rows.forEach((row) => {
     let rowHeight = 0;
-    row.forEach((cell) => {
+    headers.forEach((header, index) => {
+      const cell = row[`value${index + 1}`];
       const textHeight = docSOP.heightOfString(cell.toString(), {
         width: cellWidth - 2 * cellPadding,
         fontSize: fontSize,
@@ -327,20 +330,18 @@ function drawStockDensityTable(
     });
 
     // Check if we need to move to a new page
-    if (
-      yPosition + rowHeight >
-      docSOP.page.height - docSOP.page.margins.bottom
-    ) {
+    if (yPosition + rowHeight > docSOP.page.height - docSOP.page.margins.bottom) {
       docSOP.addPage();
       yPosition = docSOP.page.margins.top;
       headerDrawnOnThisPage = false;
       drawHeaders();
     }
 
-    row.forEach((cell, cellIndex) => {
+    headers.forEach((header, index) => {
+      const cell = row[`value${index + 1}`];
       drawCell(
         cell.toString(),
-        leftMargin + cellIndex * cellWidth,
+        leftMargin + index * cellWidth,
         yPosition,
         cellWidth,
         rowHeight
