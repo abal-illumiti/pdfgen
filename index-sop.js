@@ -1,125 +1,149 @@
-const express = require('express');
-const PDFDocument = require('pdfkit');
+const express = require("express");
+const PDFSOPDocument = require("pdfkit-table");
+//const PDFDocumentTable = require('pdfkit-table');  // Change this line
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 app.use(express.json());
 
 function createPDF(data) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 30, autoFirstPage: false });
+    const docSOP = new PDFSOPDocument({ margin: 30, autoFirstPage: false });
     const chunks = [];
 
-    doc.on('data', chunk => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
+    docSOP.on("data", (chunk) => chunks.push(chunk));
+    docSOP.on("end", () => resolve(Buffer.concat(chunks)));
+    docSOP.on("error", reject);
 
     const pageWidth = 550;
     const leftMargin = 30;
     let currentPage = 0;
 
     function addPage() {
-      doc.addPage();
+      docSOP.addPage();
       currentPage++;
 
       // Add logo to the top left corner
-      doc.image('./sapCompanyLogo.png', 30, 30,  { width: 25, height: 25 });
+      docSOP.image("./sapCompanyLogo.png", 30, 30, { width: 25, height: 25 });
 
-      doc.fontSize(20).text(`Page ${currentPage}`, { align: 'center' });
-      doc.moveDown();
+      docSOP.fontSize(20).text(`Page ${currentPage}`, { align: "center" });
+      docSOP.moveDown();
     }
 
     addPage();
 
     data.value.forEach((item) => {
-      if (doc.y > 700) {
+      if (docSOP.y > 700) {
         addPage();
       }
-      
-      drawItem(doc, item, pageWidth, leftMargin);
+      if (item["Floor Area"]) {
+        drawStockDensityTable( docSOP, item["Floor Area"]["Table"], item["Floor Area"]["Heading"], pageWidth, leftMargin );
+      } else if (item["Feeders"]) {
+        docSOP.moveDown(1);
+        drawStockDensityTable( docSOP, item["Feeders"]["Table"], item["Feeders"]["Heading"], pageWidth, leftMargin );
+      } else {
+        drawItem(docSOP, item, pageWidth, leftMargin);
+      }
     });
 
     if (data.agreement) {
-      if (doc.y + 60 > doc.page.height - doc.page.margins.bottom) {
+      if (docSOP.y + 60 > docSOP.page.height - docSOP.page.margins.bottom) {
         addPage();
       }
 
-      doc.moveDown(3);
-      drawCheckbox(doc, 'I agree', data.agreement.checkbox, leftMargin);
-      doc.moveDown(1);
+      docSOP.moveDown(3);
+      drawCheckbox(docSOP, "I agree", data.agreement.checkbox, leftMargin);
+      docSOP.moveDown(1);
 
       // Updated agreement text rendering
-      doc.font('Helvetica').fontSize(10).fillColor('#083446');
-      doc.text(data.agreement.agreement, {
-        align: 'left',
+      docSOP.font("Helvetica").fontSize(10).fillColor("#083446");
+      docSOP.text(data.agreement.agreement, {
+        align: "left",
         width: pageWidth - 2 * leftMargin,
-        lineGap: 2,  // Adjust this value to control space between lines
-        paragraphGap: 0  // No extra space between paragraphs
+        lineGap: 2, // Adjust this value to control space between lines
+        paragraphGap: 0, // No extra space between paragraphs
       });
     }
 
-    doc.end();
+    docSOP.end();
   });
 }
 
-function drawItem(doc, item, pageWidth, leftMargin) {
+function drawItem(docSOP, item, pageWidth, leftMargin) {
   // Determine font size and style based on content
+  if (item["description"] === undefined) {
+    return;
+  }
+
   let fontSize = 12;
-  let fontStyle = 'Helvetica';
+  let fontStyle = "Helvetica";
   let isSpecialRow = false;
   let isBold = false;
-  
-  if (item.description.includes('Section')) {
+
+  if (item.description.includes("Section")) {
     fontSize = 18;
-    fontStyle = 'Helvetica-Bold';
+    fontStyle = "Helvetica-Bold";
     isSpecialRow = true;
-  } else if (item.description.includes('Subsection') || item.description.includes('Sous-section')) {
+  } else if (
+    item.description.includes("Subsection") ||
+    item.description.includes("Sous-section")
+  ) {
     fontSize = 14;
-    fontStyle = 'Helvetica-Bold';
+    fontStyle = "Helvetica-Bold";
     isSpecialRow = true;
   }
 
   // Check if the description starts with "<b>"
-  if (item.description.startsWith('<b>')) {
-    fontStyle = 'Helvetica-Bold';
+  if (item.description.startsWith("<b>")) {
+    fontStyle = "Helvetica-Bold";
     isBold = true;
     // Remove the "<b>" from the beginning of the description
     item.description = item.description.substring(3);
   }
 
   // Draw description
-  doc.x = leftMargin;
-  doc.font(fontStyle).fontSize(fontSize).fillColor('#083446');
-  doc.text(item.description, { width: pageWidth - 2 * leftMargin, lineGap: 5 });
-  
+  docSOP.x = leftMargin;
+  docSOP.font(fontStyle).fontSize(fontSize).fillColor("#083446");
+  docSOP.text(item.description, {
+    width: pageWidth - 2 * leftMargin,
+    lineGap: 5,
+  });
+
   // Reduce space after all rows
-  doc.moveDown(0.2);  // Reduced space for all rows
+  docSOP.moveDown(0.2); // Reduced space for all rows
 
   // Handle different types of controls
   if (item.type) {
-    doc.font('Helvetica').fontSize(10).fillColor('#083446');
-    doc.x = leftMargin;  // Ensure alignment to the left margin
+    docSOP.font("Helvetica").fontSize(10).fillColor("#083446");
+    docSOP.x = leftMargin; // Ensure alignment to the left margin
     switch (item.type) {
-      case 'INPUT':
+      case "INPUT":
         const inputWidth = pageWidth - 2 * leftMargin;
-        const textHeight = doc.heightOfString(item.value || '', { width: inputWidth - 10 });
+        const textHeight = docSOP.heightOfString(item.value || "", {
+          width: inputWidth - 10,
+        });
         const inputHeight = Math.max(textHeight + 10, 20);
-        doc.strokeColor('#083446').rect(doc.x, doc.y, inputWidth, inputHeight).stroke();
-        doc.text(item.value || '', doc.x + 5, doc.y + 5, { width: inputWidth - 10 });
-        doc.moveDown(inputHeight / 12);
+        docSOP
+          .strokeColor("#083446")
+          .rect(docSOP.x, docSOP.y, inputWidth, inputHeight)
+          .stroke();
+        docSOP.text(item.value || "", docSOP.x + 5, docSOP.y + 5, {
+          width: inputWidth - 10,
+        });
+        docSOP.moveDown(inputHeight / 12);
         break;
-      case 'CHECKBOK':
-      case 'RADIO':
+      case "CHECKBOK":
+      case "RADIO":
         for (let i = 1; i <= 10; i++) {
           const optionKey = `option${i}`;
           if (item[optionKey]) {
             const optionValue = item[optionKey].value;
             const isChecked = item[optionKey].checked;
-            if (item.type === 'CHECKBOK') {
-              drawCheckbox(doc, optionValue, isChecked, leftMargin);
+            if (item.type === "CHECKBOK") {
+              drawCheckbox(docSOP, optionValue, isChecked, leftMargin);
             } else {
-              drawRadioButton(doc, optionValue, isChecked, leftMargin);
+              drawRadioButton(docSOP, optionValue, isChecked, leftMargin);
             }
           }
         }
@@ -129,75 +153,218 @@ function drawItem(doc, item, pageWidth, leftMargin) {
 
   // Adjust final spacing based on row type
   if (isSpecialRow) {
-    doc.moveDown(0.3);  // Slightly more space after Section and Subsection
+    docSOP.moveDown(0.3); // Slightly more space after Section and Subsection
   } else {
-    doc.moveDown(0.1);  // Minimal space after other rows for tighter layout
+    docSOP.moveDown(0.1); // Minimal space after other rows for tighter layout
   }
 }
 
-function drawCheckbox(doc, label, isChecked, leftMargin) {
-  doc.x = leftMargin;
+function drawCheckbox(docSOP, label, isChecked, leftMargin) {
   const boxSize = 10;
   const textOffset = 15;
+  const lineHeight = 14; // Approximate height of a line of text
+
+  // Check if there's enough space on the current page
+  if (docSOP.y + lineHeight > docSOP.page.height - docSOP.page.margins.bottom) {
+    docSOP.addPage();
+  }
+
+  docSOP.x = leftMargin;
+  const startY = docSOP.y;
 
   // Draw checkbox
-  doc.strokeColor('#083446').rect(doc.x, doc.y, boxSize, boxSize).stroke();
+  docSOP
+    .strokeColor("#083446")
+    .rect(docSOP.x, startY, boxSize, boxSize)
+    .stroke();
 
   // Mark checkbox if checked
   if (isChecked) {
-    doc.save();
-    doc.strokeColor('red').lineWidth(1.5);  // Changed to red color
-    doc.moveTo(doc.x + 2, doc.y + 5)
-       .lineTo(doc.x + 4, doc.y + 7)
-       .lineTo(doc.x + 8, doc.y + 3)
-       .stroke();
-    doc.restore();
+    docSOP.save();
+    docSOP.strokeColor("red").lineWidth(1.5);
+    docSOP
+      .moveTo(docSOP.x + 2, startY + 5)
+      .lineTo(docSOP.x + 4, startY + 7)
+      .lineTo(docSOP.x + 8, startY + 3)
+      .stroke();
+    docSOP.restore();
   }
 
   // Draw label
-  doc.font('Helvetica').fontSize(10).fillColor('#083446');
-  doc.text(label, doc.x + textOffset, doc.y + 1, {
+  docSOP.font("Helvetica").fontSize(10).fillColor("#083446");
+  docSOP.text(label, docSOP.x + textOffset, startY + 1, {
     lineBreak: false,
-    width: 500  // Adjust this value as needed
+    width: 500,
   });
 
-  doc.moveDown();
+  docSOP.y = Math.max(docSOP.y, startY + boxSize);
+  docSOP.moveDown(0.5);
 }
 
-function drawRadioButton(doc, label, isChecked, leftMargin) {
-  doc.x = leftMargin;
+function drawRadioButton(docSOP, label, isChecked, leftMargin) {
   const radius = 5;
   const textOffset = 15;
+  const lineHeight = 14; // Approximate height of a line of text
+
+  // Check if there's enough space on the current page
+  if (docSOP.y + lineHeight > docSOP.page.height - docSOP.page.margins.bottom) {
+    docSOP.addPage();
+  }
+
+  docSOP.x = leftMargin;
+  const startY = docSOP.y;
 
   // Draw radio button
-  doc.strokeColor('#083446').circle(doc.x + radius, doc.y + radius, radius).stroke();
+  docSOP
+    .strokeColor("#083446")
+    .circle(docSOP.x + radius, startY + radius, radius)
+    .stroke();
 
   // Mark radio button if checked
   if (isChecked) {
-    doc.fillColor('#083446').circle(doc.x + radius, doc.y + radius, radius / 2).fill();
+    docSOP
+      .fillColor("#083446")
+      .circle(docSOP.x + radius, startY + radius, radius / 2)
+      .fill();
   }
 
   // Draw label
-  doc.font('Helvetica').fontSize(10).fillColor('#083446');
-  doc.text(label, doc.x + textOffset, doc.y + 1, {
+  docSOP.font("Helvetica").fontSize(10).fillColor("#083446");
+  docSOP.text(label, docSOP.x + textOffset, startY + 1, {
     lineBreak: false,
-    width: 500  // Adjust this value as needed
+    width: 500,
   });
 
-  doc.moveDown();
+  docSOP.y = Math.max(docSOP.y, startY + radius * 2);
+  docSOP.moveDown(0.5);
 }
 
-app.post('/generate-pdf', async (req, res) => {
+// Add this new function to draw the Stock Density table
+function drawStockDensityTable(
+  docSOP,
+  stockDensity,
+  heading,
+  pageWidth,
+  leftMargin
+) {
+  if (!Array.isArray(stockDensity) || stockDensity.length === 0) return;
+
+  const headers = Object.keys(stockDensity[0]);
+  const rows = stockDensity.map((item) => Object.values(item));
+
+  const cellPadding = 2;
+  const cellWidth = (pageWidth - 2 * leftMargin) / headers.length;
+  const fontSize = 8;
+  const headerFontSize = 9;
+
+  docSOP
+    .font("Helvetica-Bold")
+    .fontSize(14)
+    .text(heading, leftMargin, docSOP.y);
+  docSOP.moveDown(0.5);
+
+  let yPosition = docSOP.y;
+  let headerDrawnOnThisPage = false;
+
+  function drawCell(text, x, y, width, height, isHeader = false) {
+    docSOP.rect(x, y, width, height).stroke();
+    if (isHeader) {
+      docSOP.fillColor("#083446").rect(x, y, width, height).fill();
+      docSOP.fillColor("#FFFFFF");
+    } else {
+      docSOP.fillColor("#083446");
+    }
+    docSOP
+      .font(isHeader ? "Helvetica-Bold" : "Helvetica")
+      .fontSize(isHeader ? headerFontSize : fontSize)
+      .text(text, x + cellPadding, y + cellPadding, {
+        width: width - 2 * cellPadding,
+        height: height - 2 * cellPadding,
+        align: "left",
+        lineBreak: true,
+      });
+  }
+
+  // Calculate header height
+  let headerHeight = 0;
+  headers.forEach((header) => {
+    const textHeight = docSOP.heightOfString(header, {
+      width: cellWidth - 2 * cellPadding,
+      fontSize: headerFontSize,
+    });
+    headerHeight = Math.max(headerHeight, textHeight + 2 * cellPadding);
+  });
+
+  function drawHeaders() {
+    if (!headerDrawnOnThisPage) {
+      headers.forEach((header, i) => {
+        drawCell(
+          header,
+          leftMargin + i * cellWidth,
+          yPosition,
+          cellWidth,
+          headerHeight,
+          true
+        );
+      });
+      yPosition += headerHeight;
+      headerDrawnOnThisPage = true;
+    }
+  }
+
+  // Initial draw of headers
+  drawHeaders();
+
+  // Draw rows
+  rows.forEach((row, rowIndex) => {
+    let rowHeight = 0;
+    row.forEach((cell) => {
+      const textHeight = docSOP.heightOfString(cell.toString(), {
+        width: cellWidth - 2 * cellPadding,
+        fontSize: fontSize,
+      });
+      rowHeight = Math.max(rowHeight, textHeight + 2 * cellPadding);
+    });
+
+    // Check if we need to move to a new page
+    if (
+      yPosition + rowHeight >
+      docSOP.page.height - docSOP.page.margins.bottom
+    ) {
+      docSOP.addPage();
+      yPosition = docSOP.page.margins.top;
+      headerDrawnOnThisPage = false;
+      drawHeaders();
+    }
+
+    row.forEach((cell, cellIndex) => {
+      drawCell(
+        cell.toString(),
+        leftMargin + cellIndex * cellWidth,
+        yPosition,
+        cellWidth,
+        rowHeight
+      );
+    });
+    yPosition += rowHeight;
+  });
+
+  docSOP.moveDown();
+}
+
+app.post("/generate-pdf", async (req, res) => {
   try {
     const data = req.body;
     const pdfBuffer = await createPDF(data);
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=output.pdf");
     res.send(pdfBuffer);
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    res.status(500).json({ error: 'An error occurred while generating the PDF' });
+    console.error("Error generating PDF:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while generating the PDF" });
   }
 });
 
