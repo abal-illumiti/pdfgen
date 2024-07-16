@@ -25,10 +25,10 @@ function createPDF(data) {
       currentPage++;
 
       // Add logo to the top left corner
-      doc.image('./sapCompanyLogo.png', 30, 30,  { width: 25, height: 25 });
+      doc.image('./sapCompanyLogo.png', 30, 30, { width: 25, height: 25 });
 
       doc.fontSize(20)
-         .font('Helvetica')
+        .font('Helvetica')
         .fillColor('#083446')  // Set page number color to #083446
         .text(`Page ${currentPage}`, { align: 'center' });
       doc.moveDown(0.3);
@@ -48,22 +48,36 @@ function createPDF(data) {
       }
     });
 
-    // Add checkbox before the agreement text
-    doc.moveDown(1);
-    drawCheckbox(doc, 'I agree', data.agreement.checkbox);
-
     // Add detailed text from the agreement object, aligned to the table margins
-    doc.moveDown(0.5);
+    doc.moveDown(1);
     doc.fontSize(12)
       .fillColor('#083446')  // Set text color to #083446
-      .text(data.agreement.agreement, 
+      .text(data.agreement.agreement,
         doc.page.margins.left,
-        doc.y, 
+        doc.y,
         {
           width: totalWidth,
           align: 'left'
         }
       );
+
+    // Add checkbox before the agreement text
+    doc.moveDown(1);
+    drawCheckbox(doc, 'I agree', data.agreement.checkbox);
+
+      // Add detailed text from the agreement object, aligned to the table margins
+    doc.moveDown(1.0);
+    doc.fontSize(14)
+      .fillColor('#083446')  // Set text color to #083446
+      .text(data.signature,
+        doc.page.margins.left,
+        doc.y,
+        {
+          width: totalWidth,
+          align: 'left'
+        }
+      );
+
 
     doc.end();
   });
@@ -72,7 +86,7 @@ function createPDF(data) {
 function drawTableRow(doc, row, columnWidths, isHeader = false) {
   const y = doc.y;
   const cellHeights = row.map((cell, i) => {
-    return doc.heightOfString(cell, { 
+    return doc.heightOfString(cell, {
       width: columnWidths[i] - 10,
       lineGap: 0
     });
@@ -91,8 +105,8 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
 
     if (!isHeader && i > 0 && row.length > 1) {
       doc.moveTo(x, y)
-         .lineTo(x, y + rowHeight)
-         .stroke();
+        .lineTo(x, y + rowHeight)
+        .stroke();
     }
 
     doc.font(isHeader ? 'Helvetica-Bold' : 'Helvetica')
@@ -114,7 +128,7 @@ function drawTableRow(doc, row, columnWidths, isHeader = false) {
 function drawCheckbox(doc, text, checked = false) {
   const checkboxSize = 15;
   const margin = 10;
-  
+
   const x = doc.page.margins.left;
   const y = doc.y;
 

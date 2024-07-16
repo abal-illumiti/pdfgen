@@ -52,6 +52,7 @@ function createPDF(data) {
           pageWidth,
           leftMargin
         );
+        docSOP.moveDown(1);
       } else {
         drawItem(docSOP, item, pageWidth, leftMargin);
       }
@@ -62,10 +63,7 @@ function createPDF(data) {
         addPage();
       }
 
-      docSOP.moveDown(3);
-      drawCheckbox(docSOP, "I agree", data.agreement.checkbox, leftMargin);
       docSOP.moveDown(1);
-
       // Updated agreement text rendering
       docSOP.font("Helvetica").fontSize(10).fillColor("#083446");
       docSOP.text(data.agreement.agreement, {
@@ -74,6 +72,19 @@ function createPDF(data) {
         lineGap: 2, // Adjust this value to control space between lines
         paragraphGap: 0, // No extra space between paragraphs
       });
+
+      docSOP.moveDown(1);
+      drawCheckbox(docSOP, "I agree", data.agreement.checkbox, leftMargin);
+      docSOP.moveDown(1);
+
+      // Add detailed text from the agreement object, aligned to the table margins
+      docSOP.fontSize(14)
+        .fillColor('#083446')  // Set text color to #083446
+        .text(data.signature,
+          docSOP.page.margins.left,
+          docSOP.y
+        );
+  
     }
 
     docSOP.end();
@@ -294,7 +305,7 @@ function drawStockDensityTable(docSOP, tableData, pageWidth, leftMargin) {
       width: cellWidth - 2 * cellPadding,
       fontSize: headerFontSize,
     });
-    headerHeight = Math.max(headerHeight, textHeight + 2 * cellPadding);
+    headerHeight = Math.max(headerHeight, textHeight + 2 * cellPadding) / 2;
   });
 
   function drawHeaders() {
