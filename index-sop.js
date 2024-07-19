@@ -27,8 +27,8 @@ function createPDF(data) {
       // Add logo to the top left corner
       docSOP.image("./sapCompanyLogo.png", 30, 30, { width: 25, height: 25 });
 
-      docSOP.fontSize(20).text(`Page ${currentPage}`, { align: "center" });
-      docSOP.moveDown();
+      docSOP.fontSize(10).text(`Page ${currentPage}`, { align: "right" });
+      docSOP.moveDown(4);
     }
 
     addPage();
