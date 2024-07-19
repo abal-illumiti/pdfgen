@@ -27,11 +27,11 @@ function createPDF(data) {
       // Add logo to the top left corner
       doc.image('./sapCompanyLogo.png', 30, 30, { width: 25, height: 25 });
 
-      doc.fontSize(20)
+      doc.fontSize(10)
         .font('Helvetica')
         .fillColor('#083446')  // Set page number color to #083446
-        .text(`Page ${currentPage}`, { align: 'center' });
-      doc.moveDown(0.3);
+        .text(`Page ${currentPage}`, { align: 'right' });
+      doc.moveDown(4);
       drawTableRow(doc, headers, columnWidths, true);
     }
 
