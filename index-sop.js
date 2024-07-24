@@ -27,8 +27,14 @@ function createPDF(data) {
       // Add logo to the top left corner
       docSOP.image("./sapCompanyLogo.png", 30, 30, { width: 25, height: 25 });
 
+      // Add "DOCUMENT FOR REVIEW" header
+      docSOP.fontSize(14)
+        .font('Helvetica-Bold')
+        .fillColor('#083446')
+        .text(data.document_header, 50, 30, { align: 'center' });
+
       docSOP.fontSize(10).text(`Page ${currentPage}`, { align: "right" });
-      docSOP.moveDown(4);
+      docSOP.moveDown(3);
     }
 
     addPage();

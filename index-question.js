@@ -27,6 +27,12 @@ function createPDF(data) {
       // Add logo to the top left corner
       doc.image('./sapCompanyLogo.png', 30, 30, { width: 25, height: 25 });
 
+  // Add "DOCUMENT FOR REVIEW" header
+  doc.fontSize(14)
+     .font('Helvetica-Bold')
+     .fillColor('#083446')
+     .text(data.document_header, 50, 30, { align: 'center' });
+
       doc.fontSize(10)
         .font('Helvetica')
         .fillColor('#083446')  // Set page number color to #083446
@@ -41,11 +47,11 @@ function createPDF(data) {
       if (doc.y > 700) {
         addPage();
       }
-      if (row.value === undefined) {
-        drawTableRow(doc, [row.description], [totalWidth]);
-      } else {
+      // if (row.value === undefined) {
+      //   drawTableRow(doc, [row.description], [totalWidth]);
+      // } else {
         drawTableRow(doc, [row.description, row.value], columnWidths);
-      }
+      // }
     });
 
     // Add detailed text from the agreement object, aligned to the table margins
