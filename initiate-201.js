@@ -1,12 +1,20 @@
 const express = require('express');
-const PDFDocument = require('pdfkit');
+//const PDFDocument = require('pdfkit');
+const PDFDocument = require('pdfkit-table'); // Change this line
 const fs = require('fs');
 const path = require('path');
 
 const app = express();
 app.use(express.json());
 
-const logoPath = path.join(__dirname, 'sapCompanyLogo.png');
+const logoPath = path.join(__dirname, 'sapCompanyLogo.png'); // Replace with your logo file
+
+function addHeader(doc, headerText, pageNumber) {
+  const logoPath = path.join(__dirname, 'sapCompanyLogo.png'); // Ensure this path is correct
+  doc.image(logoPath, 50, 20, { width: 40 });
+  doc.fontSize(14).text(headerText, 50, 30, { align: 'center', width: doc.page.width - 100 });
+  doc.fontSize(10).text(`Page ${pageNumber}`, 500, 30, { align: 'right' });
+}
 
 app.post('/generate-pdf', (req, res) => {
   const data = req.body;
@@ -15,109 +23,67 @@ app.post('/generate-pdf', (req, res) => {
     margins: { top: 50, bottom: 50, left: 50, right: 50 }
   });
 
-  // Set up the response
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'attachment; filename=document.pdf');
 
-  // Pipe the PDF to the response
   doc.pipe(res);
 
   let pageNumber = 1;
 
-  // Add header and page number to each page
-  doc.on('pageAdded', () => {
-    addHeader(doc, data.document_header, pageNumber++);
-  });
-
-  // Add initial header
+  // Add header to the first page
   addHeader(doc, data.document_header, pageNumber);
 
-  // Add sections
-  addContractDetails(doc, data.contract_details);
-  addFarmerInfo(doc, data.farmerInfo);
-  addProcessorInfo(doc, data.processorInfo);
-  addOtherInfo(doc, data.otherInfo);
+  // Event listener for new pages
+  doc.on('pageAdded', () => {
+    pageNumber++;
+    addHeader(doc, data.document_header, pageNumber);
+  });
+
+  doc.moveDown(2);
+
+  addSection(doc, data.contract_details, 'Contract Details');
+  addSection(doc, data.farmerInfo, 'Farmer Information');
+  addSection(doc, data.processorInfo, 'Processor Information');
   addQuotaAllocationTable(doc, data.quotaAllocation);
+  addSection(doc, data.otherInfo, 'Other Information');
+  addAgreement(doc, data.agreement);
 
-  // Add agreement
-  if (data.agreement && data.agreement.checkbox) {
-    doc.moveDown();
-    doc.fontSize(12).text(data.agreement.agreement);
-  }
-
-  // Finalize the PDF and end the stream
   doc.end();
 });
 
-function addHeader(doc, headerText, pageNumber) {
-  doc.image(logoPath, 50, 20, { width: 40 });
-  
-  // Center the document header and increase font size
-  doc.fontSize(14).text(headerText, 50, 30, {
-    align: 'center',
-    width: doc.page.width - 100
-  });
-  
-  doc.fontSize(10).text(`Page ${pageNumber}`, 500, 30, { align: 'right' });
-  doc.moveDown(3);
-}
 
-function addSection(doc, data, sectionTitle, fieldsPerRow) {
+function addSection(doc, data, sectionTitle) {
   doc.moveDown(1);
-  
   doc.fontSize(16).fillColor('red').font('Helvetica-Bold').text(sectionTitle, 50, doc.y, { align: 'left', width: 200 });
-  
-  doc.fillColor('black').font('Helvetica');
   doc.moveDown(0.5);
 
-  const pageWidth = doc.page.width - 100; // Account for margins
-  const fieldWidth = (pageWidth - (fieldsPerRow - 1) * 15) / fieldsPerRow; // 15 is column spacing
-  const fontSize = 10; // Same font size for labels and values
-  const rowSpacing = 3;
-  const labelValueSpacing = 1; // Consistent spacing between label and value
+  const fieldsPerRow = 2;
+  const fieldWidth = (doc.page.width - 100) / fieldsPerRow;
+  const fontSize = 10;
+  const rowSpacing = 5;
+  const labelValueSpacing = 3;
 
   let y = doc.y;
   let rowFields = [];
+  let rowValues = [];
 
   Object.entries(data).forEach(([key, field], index) => {
-    if (key === 'heading') return; // Skip the heading field
+    if (key === 'heading') return;
 
-    rowFields.push(field);
+    rowFields.push(field.label);
+    rowValues.push(field.value);
 
     if (rowFields.length === fieldsPerRow || index === Object.entries(data).length - 1) {
-      // Process the row
-      const maxLabelHeight = Math.max(...rowFields.map(f => 
-        doc.heightOfString(f.label, { width: fieldWidth, align: 'left', fontSize: fontSize })
-      ));
-
-      rowFields.forEach((f, i) => {
-        const fieldX = 50 + i * (fieldWidth + 15);
-        
-        // Draw label
-        doc.font('Helvetica-Bold')
-           .fontSize(fontSize)
-           .fillColor('#083446')
-           .text(f.label, fieldX, y, { width: fieldWidth, align: 'left' });
-
-        // Draw value box
-        const boxY = y + maxLabelHeight + labelValueSpacing;
-        doc.rect(fieldX, boxY, fieldWidth, 20).lineWidth(0.5).stroke('gray');
-        
-        // Draw value
-        doc.font('Helvetica')
-           .fontSize(fontSize)
-           .fillColor('black')
-           .text(f.value, fieldX + 5, boxY + 4, { width: fieldWidth - 10 });
-      });
-
-      // Move to next row
-      y += maxLabelHeight + 20 + labelValueSpacing + rowSpacing;
+      printRow(doc, rowFields, y, fieldWidth, fontSize, true);
+      y += 15;
+      printRow(doc, rowValues, y, fieldWidth, fontSize);
+      y += 30;
       rowFields = [];
+      rowValues = [];
 
-      // Check if we're near the bottom of the page
       if (y + 50 > doc.page.height - 50) {
         doc.addPage();
-        y = 50; // Reset y to top of new page
+        y = 50;
       }
     }
   });
@@ -125,58 +91,128 @@ function addSection(doc, data, sectionTitle, fieldsPerRow) {
   doc.moveDown(1);
 }
 
-function addContractDetails(doc, data) {
-  addSection(doc, data, data.heading, 3);
+function printRow(doc, row, y, fieldWidth, fontSize, bold = false) {
+  row.forEach((field, index) => {
+    const fieldX = 50 + index * (fieldWidth + 15);
+    doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(bold ? fontSize + 1 : fontSize).fillColor(bold ? '#083446' : 'black').text(field, fieldX, y, { width: fieldWidth, align: 'left', ellipsis: true });
+  });
 }
 
-function addFarmerInfo(doc, data) {
-  addSection(doc, data, "Farmer Information", 3);
-}
-
-function addProcessorInfo(doc, data) {
-  addSection(doc, data, "Processor Information", 4);
-}
-
-function addOtherInfo(doc, data) {
-  addSection(doc, data, "Other Information", 4);
-}
-
+// Modify addQuotaAllocationTable to be async
 function addQuotaAllocationTable(doc, data) {
   doc.moveDown();
-  doc.fontSize(14).fillColor('red').text(data.Heading, { underline: true });
+  doc.fontSize(14).fillColor('red').font('Helvetica-Bold').text(data.heading, 50, doc.y, { align: 'left', width: 200 });
   doc.moveDown();
 
-  const tableTop = doc.y;
+  const headers = Object.values(data.columnHeader);
+  const rows = data.rows;
+
   const tableLeft = 50;
-  const cellPadding = 5;
-  const cellWidth = 80;
-  const cellHeight = 20;
+  const cellPadding = 3;
+  const tableWidth = doc.page.width - 100;
+  const cellWidth = tableWidth / headers.length;
+  const headerHeight = 40; // Increased to allow for wrapping
+  const rowHeight = 20; // Reduced row height
 
-  // Draw table headers
-  Object.values(data.columnHeader).forEach((header, index) => {
-    doc.rect(tableLeft + index * cellWidth, tableTop, cellWidth, cellHeight).stroke();
-    doc.fontSize(8).fillColor('black').text(header, tableLeft + index * cellWidth + cellPadding, tableTop + cellPadding, {
-      width: cellWidth - 2 * cellPadding,
-      align: 'center'
+  let tableTop = doc.y;
+  let currentTop = tableTop;
+
+  function drawTableHeader() {
+    doc.fillColor('#083446').rect(tableLeft, currentTop, tableWidth, headerHeight).fill();
+    headers.forEach((header, i) => {
+      doc.fillColor('white')
+         .font('Helvetica-Bold')
+         .fontSize(9)
+         .text(header, 
+               tableLeft + i * cellWidth + cellPadding, 
+               currentTop + cellPadding, 
+               { width: cellWidth - 2 * cellPadding, align: 'center', height: headerHeight - 2 * cellPadding });
     });
+    currentTop += headerHeight;
+  }
+
+  function drawTableRow(row) {
+    const values = Object.values(row);
+    values.forEach((value, i) => {
+      doc.fillColor('black')
+         .font('Helvetica')
+         .fontSize(8)
+         .text(value.toString(), 
+               tableLeft + i * cellWidth + cellPadding, 
+               currentTop + cellPadding, 
+               { width: cellWidth - 2 * cellPadding, align: 'center', height: rowHeight - 2 * cellPadding });
+    });
+    currentTop += rowHeight;
+  }
+
+  function drawTableGrid() {
+    doc.rect(tableLeft, tableTop, tableWidth, currentTop - tableTop).stroke();
+    for (let i = 1; i < headers.length; i++) {
+      doc.moveTo(tableLeft + i * cellWidth, tableTop)
+         .lineTo(tableLeft + i * cellWidth, currentTop)
+         .stroke();
+    }
+    doc.moveTo(tableLeft, tableTop + headerHeight)
+       .lineTo(tableLeft + tableWidth, tableTop + headerHeight)
+       .stroke();
+    for (let i = 1; i <= (currentTop - tableTop - headerHeight) / rowHeight; i++) {
+      doc.moveTo(tableLeft, tableTop + headerHeight + i * rowHeight)
+         .lineTo(tableLeft + tableWidth, tableTop + headerHeight + i * rowHeight)
+         .stroke();
+    }
+  }
+
+  function startNewPage() {
+    doc.addPage();
+    tableTop = 100; // Start below the logo
+    currentTop = tableTop;
+    drawTableHeader();
+  }
+
+  drawTableHeader();
+
+  rows.forEach((row, rowIndex) => {
+    if (currentTop + rowHeight > doc.page.height - 50) {
+      drawTableGrid();
+      startNewPage();
+    }
+    drawTableRow(row);
   });
 
-  // Draw table rows
-  data.rows.forEach((row, rowIndex) => {
-    const y = tableTop + (rowIndex + 1) * cellHeight;
-    Object.values(row).forEach((value, columnIndex) => {
-      doc.rect(tableLeft + columnIndex * cellWidth, y, cellWidth, cellHeight).stroke();
-      doc.fontSize(8).text(value, tableLeft + columnIndex * cellWidth + cellPadding, y + cellPadding, {
-        width: cellWidth - 2 * cellPadding,
-        align: 'center'
-      });
-    });
-  });
+  drawTableGrid();
 
-  doc.moveDown(4);
+  doc.y = currentTop + 20;
 }
 
-const port = 3000;
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+
+function addAgreement(doc, agreementData) {
+  doc.moveDown(2);
+  const checkboxSize = 12;
+  const checkboxX = 50;
+  const checkboxY = doc.y;
+  const textX = checkboxX + checkboxSize + 5; // 5 px gap between checkbox and text
+  
+  // Draw checkbox
+  doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize).stroke();
+  
+  if (agreementData.checkbox) {
+    // Draw a more visible checkmark
+    doc.save()
+      .moveTo(checkboxX + 2, checkboxY + 6)
+      .lineTo(checkboxX + 5, checkboxY + 9)
+      .lineTo(checkboxX + 10, checkboxY + 3)
+      .lineWidth(2)
+      .stroke()
+      .restore();
+  }
+  
+  // Add agreement text
+  doc.font('Helvetica').fontSize(10).text(agreementData.agreementText, textX, checkboxY + 2, {
+    width: doc.page.width - textX - 50,
+    align: 'left'
+  });
+}
+  
+  app.listen(3000, () => {
+    console.log('Server started on port 3000');
+  });
