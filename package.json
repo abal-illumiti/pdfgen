@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "101n": "node 101n.js",
     "201": "node initiate-201.js",
     "sop": "node index-sop.js",
     "ques": "node index-question.js",
