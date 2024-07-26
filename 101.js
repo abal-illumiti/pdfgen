@@ -60,12 +60,9 @@ function addSection(doc, data, sectionTitle) {
   doc.fontSize(16).fillColor('red').font('Helvetica-Bold').text(sectionTitle, 50, doc.y, { align: 'left', width: 200 });
   doc.moveDown(0.5);
 
-  // this is Category Code section
-  if (data.hasOwnProperty("code1")) {
-    fieldsPerRow = 3;
-  } else {
-    fieldsPerRow = 2;
-  }
+  // Check if this is the Category Code section
+  const isCategoryCode = data.hasOwnProperty("code1");
+  fieldsPerRow = isCategoryCode ? 3 : 2;
 
   const fieldWidth = (doc.page.width - 100) / fieldsPerRow;
   const fontSize = 10;
@@ -81,14 +78,11 @@ function addSection(doc, data, sectionTitle) {
     rowValues.push(field.value);
 
     if (rowFields.length === fieldsPerRow || index === Object.entries(data).length - 1) {
-
-      // this is Category Code section
-      if (data.hasOwnProperty("code1")) {
-        printRow(doc, rowValues, y, fieldWidth, fontSize);
+      if (isCategoryCode) {
+        printRow(doc, rowValues, y, fieldWidth, fontSize, false, 'orange');
         y += 30;
-
       } else {
-        printRow(doc, rowFields, y, fieldWidth, fontSize, true);
+        printRow(doc, rowFields, y, fieldWidth, fontSize, true, '#083446');
         y += 15;
         printRow(doc, rowValues, y, fieldWidth, fontSize);
         y += 30;
@@ -107,10 +101,13 @@ function addSection(doc, data, sectionTitle) {
   doc.moveDown(1);
 }
 
-function printRow(doc, row, y, fieldWidth, fontSize, bold = false) {
+function printRow(doc, row, y, fieldWidth, fontSize, bold = false, color = 'black') {
   row.forEach((field, index) => {
     const fieldX = 50 + index * (fieldWidth + 15);
-    doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(bold ? fontSize + 1 : fontSize).fillColor(bold ? '#083446' : 'black').text(field, fieldX, y, { width: fieldWidth, align: 'left', ellipsis: true });
+    doc.font(bold ? 'Helvetica-Bold' : 'Helvetica')
+       .fontSize(bold ? fontSize + 1 : fontSize)
+       .fillColor(color)
+       .text(field, fieldX, y, { width: fieldWidth, align: 'left', ellipsis: true });
   });
 }
 
