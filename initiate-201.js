@@ -100,7 +100,8 @@ function printRow(doc, row, y, fieldWidth, fontSize, bold = false) {
 
 // Modify addQuotaAllocationTable to be async
 function addQuotaAllocationTable(doc, data) {
-  doc.moveDown();
+  doc.addPage();
+  doc.moveDown(3);
   doc.fontSize(14).fillColor('red').font('Helvetica-Bold').text(data.heading, 50, doc.y, { align: 'left', width: 200 });
   doc.moveDown();
 
