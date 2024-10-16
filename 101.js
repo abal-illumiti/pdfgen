@@ -42,13 +42,16 @@ app.post('/generate-pdf', (req, res) => {
 
   doc.moveDown(2);
 
-  addSection(doc, data.contract_details, 'Contract Details');
-  addSection(doc, data.farmerInfo, 'Farmer Information');
-  addSection(doc, data.processorInfo, 'Processor Information');
-  addSection(doc, data.quotaAllocation, 'Quota Allocation');
+  addSection(doc, data.contract_details, data.contract_details.heading);
+  addSection(doc, data.farmerInfo, data.farmerInfo.heading);
+  addSection(doc, data.processorInfo, data.processorInfo.heading);
+  // new code
+  addQuotaAllocationTable(doc, data.quotaAllocation);
+
+//  addSection(doc, data.quotaAllocation, 'Quota Allocation');
+  addSection(doc, data.otherInfo, data.otherInfo.heading);
   addSection(doc, data.categoryCode, data.categoryCode.heading);
-  addSection(doc, data.otherInfo, 'Other Information');
-  addAgreement(doc, data.agreement);
+//  addAgreement(doc, data.agreement);
 
   doc.end();
 });
@@ -137,6 +140,93 @@ function addAgreement(doc, agreementData) {
     width: doc.page.width - textX - 50,
     align: 'left'
   });
+}
+
+// Modify addQuotaAllocationTable to be async
+function addQuotaAllocationTable(doc, data) {
+  doc.addPage();
+  doc.moveDown(3);
+  doc.fontSize(14).fillColor('red').font('Helvetica-Bold').text(data.heading, 50, doc.y, { align: 'left', width: 200 });
+  doc.moveDown();
+
+  const headers = Object.values(data.columnHeader);
+  const rows = data.rows;
+
+  const tableLeft = 50;
+  const cellPadding = 3;
+  const tableWidth = doc.page.width - 100;
+  const cellWidth = tableWidth / headers.length;
+  const headerHeight = 40; // Increased to allow for wrapping
+  const rowHeight = 20; // Reduced row height
+
+  let tableTop = doc.y;
+  let currentTop = tableTop;
+
+  function drawTableHeader() {
+    doc.fillColor('#083446').rect(tableLeft, currentTop, tableWidth, headerHeight).fill();
+    headers.forEach((header, i) => {
+      doc.fillColor('white')
+         .font('Helvetica-Bold')
+         .fontSize(9)
+         .text(header, 
+               tableLeft + i * cellWidth + cellPadding, 
+               currentTop + cellPadding, 
+               { width: cellWidth - 2 * cellPadding, align: 'center', height: headerHeight - 2 * cellPadding });
+    });
+    currentTop += headerHeight;
+  }
+
+  function drawTableRow(row) {
+    const values = Object.values(row);
+    values.forEach((value, i) => {
+      doc.fillColor('black')
+         .font('Helvetica')
+         .fontSize(8)
+         .text(value.toString(), 
+               tableLeft + i * cellWidth + cellPadding, 
+               currentTop + cellPadding, 
+               { width: cellWidth - 2 * cellPadding, align: 'center', height: rowHeight - 2 * cellPadding });
+    });
+    currentTop += rowHeight;
+  }
+
+  function drawTableGrid() {
+    doc.rect(tableLeft, tableTop, tableWidth, currentTop - tableTop).stroke();
+    for (let i = 1; i < headers.length; i++) {
+      doc.moveTo(tableLeft + i * cellWidth, tableTop)
+         .lineTo(tableLeft + i * cellWidth, currentTop)
+         .stroke();
+    }
+    doc.moveTo(tableLeft, tableTop + headerHeight)
+       .lineTo(tableLeft + tableWidth, tableTop + headerHeight)
+       .stroke();
+    for (let i = 1; i <= (currentTop - tableTop - headerHeight) / rowHeight; i++) {
+      doc.moveTo(tableLeft, tableTop + headerHeight + i * rowHeight)
+         .lineTo(tableLeft + tableWidth, tableTop + headerHeight + i * rowHeight)
+         .stroke();
+    }
+  }
+
+  function startNewPage() {
+    doc.addPage();
+    tableTop = 100; // Start below the logo
+    currentTop = tableTop;
+    drawTableHeader();
+  }
+
+  drawTableHeader();
+
+  rows.forEach((row, rowIndex) => {
+    if (currentTop + rowHeight > doc.page.height - 50) {
+      drawTableGrid();
+      startNewPage();
+    }
+    drawTableRow(row);
+  });
+
+  drawTableGrid();
+
+  doc.y = currentTop + 20;
 }
 
 app.listen(3000, () => {
