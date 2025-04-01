@@ -1,0 +1,122 @@
+{
+    "document_header": "Flock Placement - Hatchery",
+    "processors": [
+        {
+            "flockPlacement": {
+                "columnHeader": {
+                    "column1": "Barn",
+                    "column2": "Floor",
+                    "column3": "Pen",
+                    "column4": "# of Chicks Placed",
+                    "column5": "Sex",
+                    "column6": "Culls at 7 days(# of birds)",
+                    "column7": "Mortality at 7 days(# of birds)",
+                    "column8": "% Mortality",
+                    "column9": "Date Updated"
+                },
+                "rows": [
+                    {
+                        "value1": "B1",
+                        "value2": "1",
+                        "value3": "19,151",
+                        "value4": "Mixed",
+                        "value5": "",
+                        "value6": "",
+                        "value7": "",
+                        "value8": "",
+                        "value9": "October 6,2024"
+                    },
+                    {
+                        "value1": "B1",
+                        "value2": "1",
+                        "value3": "19,151",
+                        "value4": "Mixed",
+                        "value5": "",
+                        "value6": "",
+                        "value7": "",
+                        "value8": "",
+                        "value9": "October 6,2024"
+                    }
+                ],
+                "sectionHeading": "Flock Placement Information"
+            },
+            "hatcheryandChickInfo": {
+                "PremisesId": {
+                    "label": "Premises ID:",
+                    "value": "ON1799929"
+                },
+                "chicksOrdered": {
+                    "label": "# of Chicks Ordered",
+                    "value": "50"
+                },
+                "chicksPlacedInHatchery": {
+                    "label": "# of Chicks Placed In Hatchery",
+                    "value": "98,550"
+                },
+                "hatcheryAccNumber": {
+                    "label": "Hatchery Accoiunt Number",
+                    "value": "9901"
+                },
+                "hatcheryName": {
+                    "label": "Hatchery Namne",
+                    "value": "Maple Leaf-Hanover Hatchery"
+                },
+                "hatcheryOrderId": {
+                    "label": "Hatchery Order ID",
+                    "value": "1055555"
+                },
+                "invoice": {
+                    "label": "Invoice #",
+                    "value": "89556521"
+                },
+                "placementDate": {
+                    "label": "Placement Date",
+                    "value": "October 4,2024"
+                },
+                "quotaPd": {
+                    "label": "Quota Period",
+                    "value": "A-185"
+                }
+            },
+            "summary": {
+                "chicksLeft": {
+                    "label": "Chicks Left to be Placed",
+                    "value": "38,302"
+                },
+                "comments": "This is a long text for the comments......",
+                "deliveryNotes": {
+                    "name": "The noted deliveries were:",
+                    "options": {
+                        "received": "Received in good order",
+                        "notReceived": "Not received in good order"
+                    },
+                    "selected": "received"
+                },
+                "sectionHeading": "Summary",
+                "totalChicksPlaced": {
+                    "label": "Total Chicks Placed",
+                    "value": "38,302"
+                }
+            },
+            "vaccineAndMedication": {
+                "columnHeader": {
+                    "column1": "Vaccine/Medication",
+                    "column2": "Dosage",
+                    "column3": "Date Administered",
+                    "column4": "Route of Administration",
+                    "column5": "Withdraws(days)"
+                },
+                "rows": [
+                    {
+                        "value1": "Market's HVT",
+                        "value2": "10",
+                        "value3": "October 3,2024",
+                        "value4": "1",
+                        "value5": "21"
+                    }
+                ],
+                "sectionHeading": "Contract Line Details"
+            }
+        }
+    ]
+}
