@@ -8,6 +8,9 @@
     "101n": "node 101n.js",
     "201": "node initiate-201.js",
     "sop": "node index-sop.js",
+    "hat": "node hatchery.js",
+    "disease": "node disease.js",
+    "vaccine": "node vaccine.js",
     "ques": "node index-question.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
