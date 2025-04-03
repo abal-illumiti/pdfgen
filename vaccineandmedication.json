@@ -1,0 +1,160 @@
+{
+    "document_header": "Vaccine and Medication",
+    "hatcheryandChickInfo": {
+        "quotaPd": {
+            "label": "Quota Period",
+            "value": "A-185"
+        },
+        "hatcheryOrderId": {
+            "label": "Hatchery Chick Order ID",
+            "value": "1055555"
+        },
+        "hatcheryName": {
+            "label": "Hatchery Name",
+            "value": "Maple Leaf-Hanover Hatchery"
+        },
+        "hatcheryAccNumber": {
+            "label": "Hatchery Account Number",
+            "value": "9901"
+        },
+        "PremisesId": {
+            "label": "Premises ID:",
+            "value": "ON1799929"
+        }
+    },
+    "vaccineDuringGrowOut": {
+        "vaccinesAgreement": {
+            "checkbox": true,
+            "agreementText": "Were any Vaccines used during Grow-Out?"
+        },
+        "columnHeader": {
+            "column1": "Barn",
+            "column2": "Floor",
+            "column3": "Pen",
+            "column4": "Name of Vaccine",
+            "column5": "Dosage",
+            "column6": "Units",
+            "column7": "Method",
+            "column8": "Date Administetered",
+            "column9": "Withdraws(days)",
+            "column10": "Safe Marketing Date"
+        },
+        "rows": [
+            {
+                "value1": "B1",
+                "value2": "1",
+                "value3": "12",
+                "value4": "Vaccine--",
+                "value5": "20ml",
+                "value6": "2",
+                "value7": "Feed",
+                "value8": "October 6,2024",
+                "value9": "12",
+                "value10": "October 6,2024"
+            },
+            {
+                "value1": "B1",
+                "value2": "1",
+                "value3": "12",
+                "value4": "Vaccine--",
+                "value5": "20ml",
+                "value6": "2",
+                "value7": "Feed",
+                "value8": "October 6,2024",
+                "value9": "12",
+                "value10": "October 6,2024"
+            }
+        ],
+        "sectionHeading": "Vaccines During Grow-Out"
+    },
+    "medicationdDuringGrowOut": {
+        "medicationAgreement": {
+            "checkbox": true,
+            "agreementText": "Were any Medications used during Grow-Out?"
+        },
+        "columnHeader": {
+            "column1": "Barn",
+            "column2": "Floor",
+            "column3": "Pen",
+            "column4": "Medicartion Usage",
+            "column5": "Name of the Medication",
+            "column6": "Dosage",
+            "column7": "Units",
+            "column8": "Method",
+            "column9": "Prescription",
+            "column10": "Date First Used",
+            "column11": "Date Last Used"
+        },
+        "rows": [
+            {
+                "value1": "B1",
+                "value2": "1",
+                "value3": "12",
+                "value4": "--Med Used--",
+                "value5": "Med name",
+                "value6": "20ml",
+                "value7": "10",
+                "value8": "Feed",
+                "value9": "Yes",
+                "value10": "October 6,2024",
+                "value11": "October 6,2024"
+            },
+            {
+                "value1": "B1",
+                "value2": "1",
+                "value3": "12",
+                "value4": "--Med Used--",
+                "value5": "Med name",
+                "value6": "20ml",
+                "value7": "10",
+                "value8": "Feed",
+                "value9": "Yes",
+                "value10": "October 6,2024",
+                "value11": "October 6,2024"
+            }
+        ],
+        "sectionHeading": "Medication During Grow-Out"
+    },
+    "medicationdDuringGrowOutRadio": {
+        "wasOFFSPImplemented": {
+            "name": "Was OFFSP implemented during Flock?",
+            "options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "selected": "yes"
+        },
+        "wasFeedUsed": {
+            "name": "Was any feed used mixed on-farm?",
+            "options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "selected": "yes"
+        },
+        "wereCategyMedsUsed": {
+            "name": "Were any Category 1 or 2 medicartions used on-farm in a preventive manner?",
+            "options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "selected": "no"
+        },
+        "sectionHeading": ""
+    },
+    "comments": {
+        "farmerComments": {
+            "label": "Farmer Comments:",
+            "value": "These are the comments from the Farmer"
+        },
+        "processorComments": {
+            "label": "Processor Comments:",
+            "value": "These are the comments from the Processor"
+        },
+        "agreement": {
+            "checkbox": true,
+            "agreementText": "Information Agreement"
+        },
+        "sectionHeading": "Comments:"
+    }
+}
