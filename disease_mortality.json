@@ -24,7 +24,8 @@
         "mortalityOnSecondDay": {
             "label": "Mortality on Second Day",
             "value": "0.5%-1%"
-        }
+        },
+        "sectionHeading": "Mortality"
     },
     "complaintAndActionTaken": {
         "columnHeader": {
