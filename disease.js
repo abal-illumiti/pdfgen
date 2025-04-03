@@ -31,7 +31,7 @@ function generateMortalityReportPDF(doc, data) {
 
     // Generate Mortality Section
     if (data.mortality) {
-        printKeyValueSection(doc, data.mortality, "Mortality Information");
+        printKeyValueSection(doc, data.mortality, data.mortality.sectionHeading);
     }
 
     // Generate Affected Area Section
