@@ -1,0 +1,112 @@
+{
+    "document_header": "Disease and Mortality Report",
+    "mortality": {
+        "quotaPd": {
+            "label": "Quota Period",
+            "value": "A-185"
+        },
+        "selectedProdAreaAffected": {
+            "label": "Selected Production Area Affected",
+            "value": "B1-1,B2-1,B2-2"
+        },
+        "hatchery": {
+            "label": "Hatchery",
+            "value": "Maple Leaf-Hanover Hatchery"
+        },
+        "dteIssueWasFirstNoticed": {
+            "label": "Date Issue was 1st Noticed",
+            "value": "October 4,2024"
+        },
+        "mortalityOnFirstDay": {
+            "label": "Mortality on First Day",
+            "value": "0.5%-1%"
+        },
+        "mortalityOnSecondDay": {
+            "label": "Mortality on Second Day",
+            "value": "0.5%-1%"
+        }
+    },
+    "complaintAndActionTaken": {
+        "columnHeader": {
+            "column1": "Major Complaint",
+            "column2": "Action Taken"
+        },
+        "rows": [
+            {
+                "value1": "Uneven Runting Flock Issues",
+                "value2": "N/A"
+            },
+            {
+                "value1": "Uneven Runting Flock Issues",
+                "value2": "No Action Taken"
+            }
+        ],
+        "sectionHeading": "Complaint and Action Taken"
+    },
+    "affectedArea": {
+        "numberOfProdAreasAffected": {
+            "label": "Number Of Production Areas Affected",
+            "value": "2"
+        },
+        "prodTypeBasedOnProcess": {
+            "label": "Production Type Based on Process Requirement",
+            "value": "Conventional Routine"
+        },
+        "nameOfDiseaseSuspected": {
+            "label": "Name of Disease Suspected",
+            "value": "E Coli Infection"
+        },
+        "diseaseConfirmed": {
+            "label": "Disease Confirmed",
+            "value": "Yes"
+        },
+        "additionalComments": {
+            "label": "Additional Comments",
+            "value": "these are additional comments"
+        }
+    },
+    "vetInformation": {
+        "vetName": {
+            "label": "Veterinary Name",
+            "value": "Payne Ziaz"
+        },
+        "postmortemLabTesting": {
+            "name": "Posmortem/Laboratory Testing",
+            "options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "selected": "yes"
+        },
+        "contactedVet": {
+            "name": "Have you contacted a Veterinarian?",
+            "options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "selected": "yes"
+        },
+        "agreeCFO": {
+            "name": "Are you agreeable with CFO discussing this case with your veterinarian if required?",
+            "options": {
+                "yes": "Yes",
+                "no": "No"
+            },
+            "selected": "no"
+        },
+        "sectionHeading": "Veterinary Information"
+    },
+    "documents": {
+        "columnHeader": {
+            "column1": "Item",
+            "column2": "File Name"
+        },
+        "rows": [
+            {
+                "value1": "Veterinary Intervention",
+                "value2": "ABC_Farm_Veterinary_Intervention_10_15_2024.pdf"
+            }
+        ],
+        "sectionHeading": "Documents"
+    }
+}
